@@ -1,7 +1,7 @@
 /*
  * s3fs - FUSE-based file system backed by Amazon S3
  *
- * Copyright 2007-2008 Randy Rizun <rrizun@gmail.com>
+ * Copyright(C) 2007 Randy Rizun <rrizun@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -130,8 +130,8 @@ bool AdditionalHeader::Load(const char* file)
       // compile
       regex_t*  preg = new regex_t;
       int       result;
-      char      errbuf[256];
       if(0 != (result = regcomp(preg, key.c_str(), REG_EXTENDED | REG_NOSUB))){ // we do not need matching info
+        char    errbuf[256];
         regerror(result, preg, errbuf, sizeof(errbuf));
         S3FS_PRN_ERR("failed to compile regex from %s key by %s.", key.c_str(), errbuf);
         delete preg;

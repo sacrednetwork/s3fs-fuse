@@ -1,7 +1,7 @@
 /*
  * s3fs - FUSE-based file system backed by Amazon S3
  *
- * Copyright 2007-2008 Randy Rizun <rrizun@gmail.com>
+ * Copyright(C) 2007 Randy Rizun <rrizun@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,6 +31,21 @@
 #include "string_util.h"
 
 using namespace std;
+
+template <class T> std::string str(T value) {
+  std::stringstream s;
+  s << value;
+  return s.str();
+}
+
+template std::string str(short value);
+template std::string str(unsigned short value);
+template std::string str(int value);
+template std::string str(unsigned int value);
+template std::string str(long value);
+template std::string str(unsigned long value);
+template std::string str(long long value);
+template std::string str(unsigned long long value);
 
 static const char hexAlphabet[] = "0123456789ABCDEF";
 
@@ -288,7 +303,7 @@ char* s3fs_base64(const unsigned char* input, size_t length)
   if(!input || 0 >= length){
     return NULL;
   }
-  if(NULL == (result = (char*)malloc((((length / 3) + 1) * 4 + 1) * sizeof(char)))){
+  if(NULL == (result = reinterpret_cast<char*>(malloc((((length / 3) + 1) * 4 + 1) * sizeof(char))))){
     return NULL; // ENOMEM
   }
 
@@ -338,7 +353,7 @@ unsigned char* s3fs_decode64(const char* input, size_t* plength)
   if(!input || 0 == strlen(input) || !plength){
     return NULL;
   }
-  if(NULL == (result = (unsigned char*)malloc((strlen(input) + 1)))){
+  if(NULL == (result = reinterpret_cast<unsigned char*>(malloc((strlen(input) + 1))))){
     return NULL; // ENOMEM
   }
 

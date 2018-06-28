@@ -1,7 +1,7 @@
 /*
  * s3fs - FUSE-based file system backed by Amazon S3
  *
- * Copyright 2007-2008 Randy Rizun <rrizun@gmail.com>
+ * Copyright(C) 2007 Randy Rizun <rrizun@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,7 +21,8 @@
 #define S3FS_S3_H_
 
 #define FUSE_USE_VERSION      26
-#define FIVE_GB               5368709120LL
+
+static const int64_t FIVE_GB = 5LL * 1024LL * 1024LL * 1024LL;
 
 #include <fuse.h>
 

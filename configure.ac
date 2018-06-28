@@ -20,7 +20,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(s3fs, 1.80)
+AC_INIT(s3fs, 1.83)
 AC_CONFIG_HEADER([config.h])
 
 AC_CANONICAL_SYSTEM
@@ -39,6 +39,11 @@ dnl ----------------------------------------------
 dnl For OSX
 dnl ----------------------------------------------
 case "$target" in
+   *-cygwin* )
+      # Do something specific for windows using winfsp
+      CXXFLAGS="$CXXFLAGS -D_GNU_SOURCE=1"
+      min_fuse_version=2.8
+      ;;
    *-darwin* )
       # Do something specific for mac
       min_fuse_version=2.7.3
@@ -176,13 +181,13 @@ dnl
 dnl For PKG_CONFIG before checking nss/gnutls.
 dnl this is redundant checking, but we need checking before following.
 dnl
-PKG_CHECK_MODULES([common_lib_checking], [fuse >= ${min_fuse_version} libcurl >= 7.0 libxml-2.0 >= 2.6])
+PKG_CHECK_MODULES([common_lib_checking], [fuse >= ${min_fuse_version} libcurl >= 7.0 libxml-2.0 >= 2.6 ])
 
 AC_MSG_CHECKING([compile s3fs with])
 case "${auth_lib}" in
 openssl)
   AC_MSG_RESULT(OpenSSL)
-  PKG_CHECK_MODULES([DEPS], [fuse >= ${min_fuse_version} libcurl >= 7.0 libxml-2.0 >= 2.6 libcrypto >= 0.9])
+  PKG_CHECK_MODULES([DEPS], [fuse >= ${min_fuse_version} libcurl >= 7.0 libxml-2.0 >= 2.6 libcrypto >= 0.9 ])
   ;;
 gnutls)
   AC_MSG_RESULT(GnuTLS-gcrypt)

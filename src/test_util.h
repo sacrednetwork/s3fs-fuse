@@ -1,7 +1,7 @@
 /*
  * s3fs - FUSE-based file system backed by Amazon S3
  *
- * Copyright 2014 Andrew Gaul <andrew@gaul.org>
+ * Copyright(C) 2014 Andrew Gaul <andrew@gaul.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -33,8 +33,9 @@ void assert_strequals(const char *x, const char *y, const char *file, int line)
 {
   if(x == NULL && y == NULL){
     return;
-  } else if((x == NULL || y == NULL) || strcmp(x, y) != 0){
-    std::cerr << x << " != " << y << " at " << file << ":" << line << std::endl;
+  // cppcheck-suppress nullPointerRedundantCheck
+  } else if(x == NULL || y == NULL || strcmp(x, y) != 0){
+    std::cerr << (x ? x : "null") << " != " << (y ? y : "null") << " at " << file << ":" << line << std::endl;
     std::exit(1);
   }
 }

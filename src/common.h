@@ -1,7 +1,7 @@
 /*
  * s3fs - FUSE-based file system backed by Amazon S3
  *
- * Copyright 2007-2008 Randy Rizun <rrizun@gmail.com>
+ * Copyright(C) 2007 Randy Rizun <rrizun@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,6 +21,7 @@
 #ifndef S3FS_COMMON_H_
 #define S3FS_COMMON_H_
 
+#include <stdlib.h>
 #include "../config.h"
 
 //
@@ -37,7 +38,7 @@
 //
 // Macro
 //
-#define SAFESTRPTR(strptr) (strptr ? strptr : "")
+static inline const char *SAFESTRPTR(const char *strptr) { return strptr ? strptr : ""; }
 
 //
 // Debug level
@@ -79,7 +80,7 @@ enum s3fs_log_level{
          if(foreground){ \
            fprintf(stdout, "%s%s:%s(%d): " fmt "%s\n", S3FS_LOG_LEVEL_STRING(level), __FILE__, __func__, __LINE__, __VA_ARGS__); \
          }else{ \
-           syslog(S3FS_LOG_LEVEL_TO_SYSLOG(level), "%s:%s(%d): " fmt "%s", __FILE__, __func__, __LINE__, __VA_ARGS__); \
+           syslog(S3FS_LOG_LEVEL_TO_SYSLOG(level), "%s%s:%s(%d): " fmt "%s", instance_name.c_str(), __FILE__, __func__, __LINE__, __VA_ARGS__); \
          } \
        }
 
@@ -88,7 +89,7 @@ enum s3fs_log_level{
          if(foreground){ \
            fprintf(stdout, "%s%s%s:%s(%d): " fmt "%s\n", S3FS_LOG_LEVEL_STRING(level), S3FS_LOG_NEST(nest), __FILE__, __func__, __LINE__, __VA_ARGS__); \
          }else{ \
-           syslog(S3FS_LOG_LEVEL_TO_SYSLOG(level), "%s" fmt "%s", S3FS_LOG_NEST(nest), __VA_ARGS__); \
+           syslog(S3FS_LOG_LEVEL_TO_SYSLOG(level), "%s%s" fmt "%s", instance_name.c_str(), S3FS_LOG_NEST(nest), __VA_ARGS__); \
          } \
        }
 
@@ -97,7 +98,15 @@ enum s3fs_log_level{
          fprintf(stderr, "s3fs: " fmt "%s\n", __VA_ARGS__); \
        }else{ \
          fprintf(stderr, "s3fs: " fmt "%s\n", __VA_ARGS__); \
-         syslog(S3FS_LOG_LEVEL_TO_SYSLOG(S3FS_LOG_CRIT), "s3fs: " fmt "%s", __VA_ARGS__); \
+         syslog(S3FS_LOG_LEVEL_TO_SYSLOG(S3FS_LOG_CRIT), "%ss3fs: " fmt "%s", instance_name.c_str(), __VA_ARGS__); \
+       }
+
+// Special macro for init message
+#define S3FS_PRN_INIT_INFO(fmt, ...) \
+       if(foreground){ \
+         fprintf(stdout, "%s%s%s:%s(%d): " fmt "%s\n", S3FS_LOG_LEVEL_STRING(S3FS_LOG_INFO), S3FS_LOG_NEST(0), __FILE__, __func__, __LINE__, __VA_ARGS__, ""); \
+       }else{ \
+         syslog(S3FS_LOG_LEVEL_TO_SYSLOG(S3FS_LOG_INFO), "%s%s" fmt "%s", instance_name.c_str(), S3FS_LOG_NEST(0), __VA_ARGS__, ""); \
        }
 
 // [NOTE]
@@ -118,12 +127,18 @@ enum s3fs_log_level{
 //
 // Typedef
 //
-typedef std::map<std::string, std::string> headers_t;
+struct header_nocase_cmp : public std::binary_function<std::string, std::string, bool>{
+  bool operator()(const std::string &strleft, const std::string &strright) const
+  {
+    return (strcasecmp(strleft.c_str(), strright.c_str()) < 0);
+  }
+};
+typedef std::map<std::string, std::string, header_nocase_cmp> headers_t;
 
 //
 // Header "x-amz-meta-xattr" is for extended attributes.
-// This header is url encoded string which is json formated.
-//   x-amz-meta-xattr:urlencod({"xattr-1":"base64(value-1)","xattr-2":"base64(value-2)","xattr-3":"base64(value-3)"})
+// This header is url encoded string which is json formatted.
+//   x-amz-meta-xattr:urlencode({"xattr-1":"base64(value-1)","xattr-2":"base64(value-2)","xattr-3":"base64(value-3)"})
 //
 typedef struct xattr_value{
   unsigned char* pvalue;
@@ -141,17 +156,20 @@ typedef struct xattr_value{
 typedef std::map<std::string, PXATTRVAL> xattrs_t;
 
 //
-// Global valiables
+// Global variables
 //
 extern bool           foreground;
 extern bool           nomultipart;
 extern bool           pathrequeststyle;
+extern bool           complement_stat;
 extern std::string    program_name;
 extern std::string    service_path;
 extern std::string    host;
 extern std::string    bucket;
 extern std::string    mount_prefix;
 extern std::string    endpoint;
+extern std::string    cipher_suites;
+extern std::string    instance_name;
 extern s3fs_log_level debug_level;
 extern const char*    s3fs_log_nest[S3FS_LOG_NEST_MAX];
 
